@@ -1,4 +1,4 @@
-const canvas = new G.Canvas({
+const canvas = new G_WebGL.Canvas({
   container: 'container',
   width: 600,
   height: 500,

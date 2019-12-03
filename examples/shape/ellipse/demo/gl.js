@@ -4,13 +4,15 @@ const canvas = new G.Canvas({
   height: 500,
 });
 
-canvas.addShape('circle', {
+canvas.addShape('ellipse', {
   attrs: {
     x: 300,
     y: 200,
-    r: 100,
+    rx: 100,
+    ry: 150,
     fill: '#1890FF',
     stroke: '#F04864',
     lineWidth: 4,
+    radius: 8,
   },
 });

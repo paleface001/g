@@ -69,5 +69,6 @@ $ git clone git@github.com:antvis/g.git
 $ cd g
 $ npm install
 $ npm run bootstrap
-$ npm run build
+$ npm run watch
+$ npm run start
 ```
