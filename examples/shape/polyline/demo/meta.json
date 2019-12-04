@@ -11,6 +11,22 @@
         "en": "Polyline"
       },
       "screenshot": "https://gw.alipayobjects.com/mdn/rms_6ae20b/afts/img/A*bo4rRK0U8PIAAAAAAAAAAABkARQnAQ"
+    },
+    {
+      "filename": "gl.js",
+      "title": {
+        "zh": "折线（WebGL 版本）",
+        "en": "Polyline with WebGL"
+      },
+      "screenshot": "https://gw.alipayobjects.com/mdn/rms_6ae20b/afts/img/A*bo4rRK0U8PIAAAAAAAAAAABkARQnAQ"
+    },
+    {
+      "filename": "dash.js",
+      "title": {
+        "zh": "虚线",
+        "en": "Dashline"
+      },
+      "screenshot": "https://gw.alipayobjects.com/mdn/rms_6ae20b/afts/img/A*bo4rRK0U8PIAAAAAAAAAAABkARQnAQ"
     }
   ]
 }

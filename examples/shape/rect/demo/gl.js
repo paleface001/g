@@ -1,17 +1,18 @@
-const canvas = new G.Canvas({
+const canvas = new G_WebGL.Canvas({
   container: 'container',
   width: 600,
   height: 500,
 });
 
-canvas.addShape('ellipse', {
+canvas.addShape('rect', {
   attrs: {
-    x: 300,
-    y: 200,
-    rx: 100,
-    ry: 150,
+    x: 200,
+    y: 100,
+    width: 300,
+    height: 200,
     fill: '#1890FF',
     stroke: '#F04864',
     lineWidth: 4,
+    // radius: 8,
   },
 });

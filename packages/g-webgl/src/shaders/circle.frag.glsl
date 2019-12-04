@@ -6,7 +6,7 @@ uniform float u_StrokeOpacity : 1;
 
 varying vec4 v_Data;
 varying vec4 v_Color;
-varying float v_Radius;
+varying vec3 v_Size;
 
 #pragma include "sdf_2d"
 #pragma include "picking"
@@ -16,38 +16,21 @@ void main() {
 
   lowp float antialiasblur = v_Data.z;
   float antialiased_blur = -max(u_Blur, antialiasblur);
-  float r = v_Radius / (v_Radius + u_StrokeWidth);
+  float rx = v_Size.x / (v_Size.x + u_StrokeWidth);
+  float ry = v_Size.y / (v_Size.y + u_StrokeWidth);
 
   float outer_df;
   float inner_df;
-  // 'circle', 'triangle', 'square', 'pentagon', 'hexagon', 'octogon', 'hexagram', 'rhombus', 'vesica'
+
   if (shape == 0) {
-    outer_df = sdCircle(v_Data.xy, 1.0);
-    inner_df = sdCircle(v_Data.xy, r);
+    outer_df = sdCircle(v_Data.xy, 1.);
+    inner_df = sdCircle(v_Data.xy, rx);
   } else if (shape == 1) {
-    outer_df = sdEquilateralTriangle(1.1 * v_Data.xy);
-    inner_df = sdEquilateralTriangle(1.1 / r * v_Data.xy);
+    outer_df = sdEllipsoidApproximated(v_Data.xy, vec2(1.));
+    inner_df = sdEllipsoidApproximated(v_Data.xy, vec2(rx, ry));
   } else if (shape == 2) {
-    outer_df = sdBox(v_Data.xy, vec2(1.));
-    inner_df = sdBox(v_Data.xy, vec2(r));
-  } else if (shape == 3) {
-    outer_df = sdPentagon(v_Data.xy, 0.8);
-    inner_df = sdPentagon(v_Data.xy, r * 0.8);
-  } else if (shape == 4) {
-    outer_df = sdHexagon(v_Data.xy, 0.8);
-    inner_df = sdHexagon(v_Data.xy, r * 0.8);
-  } else if (shape == 5) {
-    outer_df = sdOctogon(v_Data.xy, 1.0);
-    inner_df = sdOctogon(v_Data.xy, r);
-  } else if (shape == 6) {
-    outer_df = sdHexagram(v_Data.xy, 0.52);
-    inner_df = sdHexagram(v_Data.xy, r * 0.52);
-  } else if (shape == 7) {
-    outer_df = sdRhombus(v_Data.xy, vec2(1.0));
-    inner_df = sdRhombus(v_Data.xy, vec2(r));
-  } else if (shape == 8) {
-    outer_df = sdVesica(v_Data.xy, 1.1, 0.8);
-    inner_df = sdVesica(v_Data.xy, r * 1.1, r * 0.8);
+    outer_df = sdRoundedBox(v_Data.xy, vec2(v_Size.x / v_Size.y, 1.), .2);
+    inner_df = sdRoundedBox(v_Data.xy, vec2(rx, ry), 0.);
   }
 
   float opacity_t = smoothstep(0.0, antialiased_blur, outer_df);

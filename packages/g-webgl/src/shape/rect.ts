@@ -1,6 +1,5 @@
 /**
  * @fileoverview SDF 绘制 2D 图形
- * @see https://github.com/antvis/g/issues/288
  * @author pyqiverson@gmail.com
  */
 
@@ -12,25 +11,29 @@ import { rgb2arr } from '../util/color';
 import { gl } from '../services/renderer/gl';
 import { getPixelRatio } from '../util/util';
 
-export default class Circle extends ShapeBase {
+export default class Rect extends ShapeBase {
   private model: IModel;
 
   protected buildModel() {
     const { createModel, createAttribute, createBuffer, createElements } = this.rendererService;
     // @ts-ignore
-    const { x, y, r, fill, fillOpacity, stroke, strokeOpacity, lineWidth } = this.attr();
+    const { x, y, width, height, radius, fill, fillOpacity, stroke, strokeOpacity, lineWidth } = this.attr();
+    const halfWidth = width / 2;
+    const halfHeight = height / 2;
+    const centerX = x + halfWidth;
+    const centerY = y + halfHeight;
 
     const fillColor = rgb2arr(fill);
     const strokeColor = rgb2arr(stroke);
 
     // 注册 Shader 模块并编译
-    this.shaderModuleService.registerModule('circle', {
+    this.shaderModuleService.registerModule('rect', {
       vs: circleVertex,
       fs: circleFragment,
     });
 
     // 获取编译结果
-    const { vs, fs, uniforms } = this.shaderModuleService.getModule('circle');
+    const { vs, fs, uniforms } = this.shaderModuleService.getModule('rect');
 
     this.model = createModel({
       vs,
@@ -38,7 +41,7 @@ export default class Circle extends ShapeBase {
       attributes: {
         a_Position: createAttribute({
           buffer: createBuffer({
-            data: [x, y, x, y, x, y, x, y],
+            data: [centerX, centerY, centerX, centerY, centerX, centerY, centerX, centerY],
             type: gl.FLOAT,
           }),
           size: 2,
@@ -52,14 +55,27 @@ export default class Circle extends ShapeBase {
         }),
         a_Size: createAttribute({
           buffer: createBuffer({
-            data: [r, r, r, r, r, r, r, r],
+            data: [
+              halfWidth,
+              halfHeight,
+              radius,
+              halfWidth,
+              halfHeight,
+              radius,
+              halfWidth,
+              halfHeight,
+              radius,
+              halfWidth,
+              halfHeight,
+              radius,
+            ],
             type: gl.FLOAT,
           }),
-          size: 2,
+          size: 3,
         }),
         a_Shape: createAttribute({
           buffer: createBuffer({
-            data: [0, 0, 0, 0],
+            data: [2, 2, 2, 2],
             type: gl.FLOAT,
           }),
           size: 1,

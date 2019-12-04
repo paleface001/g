@@ -1,6 +1,5 @@
 /**
  * @fileoverview SDF 绘制 2D 图形
- * @see https://github.com/antvis/g/issues/288
  * @author pyqiverson@gmail.com
  */
 
@@ -12,25 +11,25 @@ import { rgb2arr } from '../util/color';
 import { gl } from '../services/renderer/gl';
 import { getPixelRatio } from '../util/util';
 
-export default class Circle extends ShapeBase {
+export default class Ellipse extends ShapeBase {
   private model: IModel;
 
   protected buildModel() {
     const { createModel, createAttribute, createBuffer, createElements } = this.rendererService;
     // @ts-ignore
-    const { x, y, r, fill, fillOpacity, stroke, strokeOpacity, lineWidth } = this.attr();
+    const { x, y, rx, ry, fill, fillOpacity, stroke, strokeOpacity, lineWidth } = this.attr();
 
     const fillColor = rgb2arr(fill);
     const strokeColor = rgb2arr(stroke);
 
     // 注册 Shader 模块并编译
-    this.shaderModuleService.registerModule('circle', {
+    this.shaderModuleService.registerModule('ellipse', {
       vs: circleVertex,
       fs: circleFragment,
     });
 
     // 获取编译结果
-    const { vs, fs, uniforms } = this.shaderModuleService.getModule('circle');
+    const { vs, fs, uniforms } = this.shaderModuleService.getModule('ellipse');
 
     this.model = createModel({
       vs,
@@ -52,14 +51,14 @@ export default class Circle extends ShapeBase {
         }),
         a_Size: createAttribute({
           buffer: createBuffer({
-            data: [r, r, r, r, r, r, r, r],
+            data: [rx, ry, rx, ry, rx, ry, rx, ry],
             type: gl.FLOAT,
           }),
           size: 2,
         }),
         a_Shape: createAttribute({
           buffer: createBuffer({
-            data: [0, 0, 0, 0],
+            data: [1, 1, 1, 1],
             type: gl.FLOAT,
           }),
           size: 1,

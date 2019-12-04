@@ -5,7 +5,7 @@ import { IModuleParams, IShaderModuleService } from './IShaderModuleService';
 import common from '../../shaders/common.glsl';
 import pickingFrag from '../../shaders/picking.frag.glsl';
 import pickingVert from '../../shaders/picking.vert.glsl';
-import sdf2d from '../../shaders/sdf_2d.glsl';
+import sdf2dFrag from '../../shaders/sdf_2d.glsl';
 
 const precisionRegExp = /precision\s+(high|low|medium)p\s+float/;
 const globalDefaultprecision =
@@ -18,7 +18,7 @@ export default class ShaderModuleService implements IShaderModuleService {
 
   public registerBuiltinModules() {
     this.registerModule('common', { vs: common, fs: common });
-    this.registerModule('sdf_2d', { vs: '', fs: sdf2d });
+    this.registerModule('sdf_2d', { vs: '', fs: sdf2dFrag });
     this.registerModule('picking', { vs: pickingVert, fs: pickingFrag });
   }
 
