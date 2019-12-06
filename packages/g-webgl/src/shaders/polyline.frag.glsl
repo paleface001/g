@@ -15,7 +15,7 @@ void main() {
   // anti-alias by interpolating normal
   float blur = 1.- smoothstep(u_Blur, 1., length(v_Normal)) * u_Opacity;
 
-  gl_FragColor.a *= u_Opacity * ceil(mod(v_DistanceRatio + u_DashOffset, v_DashArray) - (v_DashArray * u_DashRatio));
+  gl_FragColor.a *= u_Opacity * (1. - ceil(mod(v_DistanceRatio + u_DashOffset, v_DashArray) - (v_DashArray * u_DashRatio)));
 
   // gl_FragColor.a *= blur;
   gl_FragColor = filterColor(gl_FragColor);

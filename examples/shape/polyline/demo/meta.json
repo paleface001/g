@@ -27,6 +27,14 @@
         "en": "Dashline"
       },
       "screenshot": "https://gw.alipayobjects.com/mdn/rms_6ae20b/afts/img/A*bo4rRK0U8PIAAAAAAAAAAABkARQnAQ"
+    },
+    {
+      "filename": "dash-animate.js",
+      "title": {
+        "zh": "虚线 Path 动画",
+        "en": "Animated dashline with WebGL"
+      },
+      "screenshot": "https://gw.alipayobjects.com/mdn/rms_6ae20b/afts/img/A*bo4rRK0U8PIAAAAAAAAAAABkARQnAQ"
     }
   ]
 }

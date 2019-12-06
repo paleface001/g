@@ -12,20 +12,31 @@ import { rgb2arr } from '../util/color';
 import { gl } from '../services/renderer/gl';
 import getNormals from '../util/polyline';
 import { getPixelRatio } from '../util/util';
+import { IAttribute } from '../services/renderer/IAttribute';
 
 export default class Line extends ShapeBase {
   private model: IModel;
+  private totalDistance: number;
+
+  /**
+   * 考虑动画场景下的颜色属性
+   */
+  private colorAttribute: IAttribute;
+
+  /**
+   * 考虑动画场景下的线宽属性
+   */
+  private sizeAttribute: IAttribute;
 
   protected buildModel() {
     const { createModel, createAttribute, createBuffer, createElements } = this.rendererService;
     // @ts-ignore
-    const { x1, y1, x2, y2, stroke, lineWidth, lineDash, opacity = 1 } = this.attr();
+    const { x1, y1, x2, y2, stroke, lineWidth, lineDash, dashOffset = 0, opacity = 1 } = this.attr();
 
     const strokeColor = rgb2arr(stroke);
     const halfWidth = lineWidth / 2;
-    const dashOffset = 0;
     // 仅支持等距虚线 lineDash: [5, 10]，不支持 [5, 10, 15]
-    const dashRatio = lineDash ? lineDash[0] / (lineDash[0] + lineDash[1]) : 0;
+    const dashRatio = lineDash ? lineDash[0] / (lineDash[0] + lineDash[1]) : 1;
 
     const { normals, attrIndex, attrPos, attrDistance } = getNormals(
       [
@@ -45,6 +56,7 @@ export default class Line extends ShapeBase {
     const dashArrayBufferData = [];
     const totalDistanceBufferData = [];
     const totalDistance = attrDistance[attrDistance.length - 1];
+    this.totalDistance = totalDistance;
 
     for (let i = 0; i < attrPos.length; i++) {
       positionBufferData.push(...attrPos[i]);
@@ -54,7 +66,7 @@ export default class Line extends ShapeBase {
       colorBufferData.push(...strokeColor);
       pickingColorBufferData.push(...[0, 0, 0]);
       totalDistanceBufferData.push(totalDistance);
-      dashArrayBufferData.push(lineDash ? lineDash[0] / totalDistance : 1);
+      dashArrayBufferData.push(lineDash ? (lineDash[0] + lineDash[1]) / totalDistance : 1);
     }
 
     // 注册 Shader 模块并编译
@@ -65,6 +77,21 @@ export default class Line extends ShapeBase {
 
     // 获取编译结果
     const { vs, fs, uniforms } = this.shaderModuleService.getModule('line');
+
+    this.colorAttribute = createAttribute({
+      buffer: createBuffer({
+        data: colorBufferData,
+        type: gl.FLOAT,
+      }),
+      size: 4,
+    });
+    this.sizeAttribute = createAttribute({
+      buffer: createBuffer({
+        data: sizeBufferData,
+        type: gl.FLOAT,
+      }),
+      size: 1,
+    });
 
     this.model = createModel({
       vs,
@@ -91,20 +118,8 @@ export default class Line extends ShapeBase {
           }),
           size: 1,
         }),
-        a_Size: createAttribute({
-          buffer: createBuffer({
-            data: sizeBufferData,
-            type: gl.FLOAT,
-          }),
-          size: 1,
-        }),
-        a_Color: createAttribute({
-          buffer: createBuffer({
-            data: colorBufferData,
-            type: gl.FLOAT,
-          }),
-          size: 4,
-        }),
+        a_Size: this.sizeAttribute,
+        a_Color: this.colorAttribute,
         a_PickingColor: createAttribute({
           buffer: createBuffer({
             data: pickingColorBufferData,
@@ -137,7 +152,7 @@ export default class Line extends ShapeBase {
       uniforms: {
         ...uniforms,
         u_Opacity: opacity,
-        u_DashOffset: dashOffset,
+        u_DashOffset: dashOffset / totalDistance,
         u_DashRatio: dashRatio,
       },
       primitive: gl.TRIANGLES,
@@ -164,12 +179,34 @@ export default class Line extends ShapeBase {
   protected drawModel() {
     const { width, height } = this.rendererService.getViewportSize();
     const pixelRatio = getPixelRatio();
+    const uniforms = {
+      u_ViewportSize: [width / pixelRatio, height / pixelRatio],
+      u_ViewProjectionMatrix: [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1],
+      u_ModelMatrix: [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1],
+    };
+
+    // 支持的动画属性有：dashOffset、stroke 和 lineWidth
+    Object.keys(this.dirtyAttributes).forEach((attributeName) => {
+      const value = this.dirtyAttributes[attributeName];
+      if (attributeName === 'dashOffset') {
+        uniforms['u_DashOffset'] = (value as number) / this.totalDistance;
+      } else if (attributeName === 'stroke') {
+        const strokeColor = rgb2arr(value as string);
+        this.colorAttribute.updateBuffer({
+          data: [...strokeColor, ...strokeColor, ...strokeColor, ...strokeColor],
+          offset: 0,
+        });
+      } else if (attributeName === 'lineWidth') {
+        const halfWidth = (value as number) / 2;
+        this.sizeAttribute.updateBuffer({
+          data: [halfWidth, halfWidth, halfWidth, halfWidth],
+          offset: 0,
+        });
+      }
+    });
+
     this.model.draw({
-      uniforms: {
-        u_ViewportSize: [width / pixelRatio, height / pixelRatio],
-        u_ViewProjectionMatrix: [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1],
-        u_ModelMatrix: [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1],
-      },
+      uniforms,
     });
   }
 }

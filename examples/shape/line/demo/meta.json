@@ -19,6 +19,22 @@
         "en": "Line with WebGL"
       },
       "screenshot": "https://gw.alipayobjects.com/mdn/rms_6ae20b/afts/img/A*7YsyTJDA_CMAAAAAAAAAAABkARQnAQ"
+    },
+    {
+      "filename": "dash-animate.js",
+      "title": {
+        "zh": "虚线动画（WebGL 版本）",
+        "en": "Animated dashline with WebGL"
+      },
+      "screenshot": "https://gw.alipayobjects.com/mdn/rms_6ae20b/afts/img/A*7YsyTJDA_CMAAAAAAAAAAABkARQnAQ"
+    },
+    {
+      "filename": "color-animate.js",
+      "title": {
+        "zh": "颜色渐变（WebGL 版本）",
+        "en": "Change line's color with WebGL"
+      },
+      "screenshot": "https://gw.alipayobjects.com/mdn/rms_6ae20b/afts/img/A*7YsyTJDA_CMAAAAAAAAAAABkARQnAQ"
     }
   ]
 }

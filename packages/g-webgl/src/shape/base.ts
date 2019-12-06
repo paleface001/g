@@ -10,9 +10,22 @@ class ShapeBase extends AbstractShape {
    */
   private isModelCreated: boolean = false;
 
+  /**
+   * 渲染服务
+   */
   protected rendererService: IRendererService;
 
+  /**
+   * Shader 模块化服务
+   */
   protected shaderModuleService: IShaderModuleService;
+
+  /**
+   * 待更新的脏属性
+   */
+  protected dirtyAttributes: {
+    [attributeName: string]: unknown;
+  } = {};
 
   getDefaultAttrs() {
     const attrs = super.getDefaultAttrs();
@@ -25,25 +38,8 @@ class ShapeBase extends AbstractShape {
   }
 
   calculateBBox(): BBox {
+    // @ts-ignore
     const type = this.get('type');
-    // const lineWidth = this.getHitLineWidth();
-    // const attrs = this.attr();
-    // const box = this.getInnerBox(attrs);
-    // const halfLineWidth = lineWidth / 2;
-    // const minX = box.x - halfLineWidth;
-    // const minY = box.y - halfLineWidth;
-    // const maxX = box.x + box.width + halfLineWidth;
-    // const maxY = box.y + box.height + halfLineWidth;
-    // return {
-    //   x: minX,
-    //   minX,
-    //   y: minY,
-    //   minY,
-    //   width: box.width + lineWidth,
-    //   height: box.height + lineWidth,
-    //   maxX,
-    //   maxY,
-    // };
     return {
       x: 0,
       y: 0,
@@ -64,12 +60,9 @@ class ShapeBase extends AbstractShape {
     refreshElement(this, changeType);
   }
 
-  isFill() {
-    return !!this.attrs['fill'] || this.isClipShape();
-  }
-
-  isStroke() {
-    return !!this.attrs['stroke'];
+  onAttrChange(name: string, value: any, originValue: any) {
+    super.onAttrChange(name, value, originValue);
+    this.dirtyAttributes[name] = value;
   }
 
   draw({
@@ -92,10 +85,12 @@ class ShapeBase extends AbstractShape {
   _afterDraw() {
     // 绘制后消除标记
     this.set('hasChanged', false);
+    this.dirtyAttributes = {};
   }
 
   skipDraw() {
     this.set('hasChanged', false);
+    this.dirtyAttributes = {};
   }
 
   protected buildModel() {

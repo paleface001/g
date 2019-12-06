@@ -15,6 +15,7 @@ import { getPixelRatio } from '../util/util';
 
 export default class Polyline extends ShapeBase {
   private model: IModel;
+  private totalDistance: number;
 
   protected buildModel() {
     const { createModel, createAttribute, createBuffer, createElements } = this.rendererService;
@@ -25,7 +26,7 @@ export default class Polyline extends ShapeBase {
     const halfWidth = lineWidth / 2;
     const dashOffset = 0;
     // 仅支持等距虚线 lineDash: [5, 10]，不支持 [5, 10, 15]
-    const dashRatio = lineDash ? lineDash[0] / (lineDash[0] + lineDash[1]) : 0;
+    const dashRatio = lineDash ? lineDash[0] / (lineDash[0] + lineDash[1]) : 1;
 
     const { normals, attrIndex, attrPos, attrDistance } = getNormals(points, false, 0);
 
@@ -38,6 +39,7 @@ export default class Polyline extends ShapeBase {
     const dashArrayBufferData = [];
     const totalDistanceBufferData = [];
     const totalDistance = attrDistance[attrDistance.length - 1];
+    this.totalDistance = totalDistance;
 
     for (let i = 0; i < attrPos.length; i++) {
       positionBufferData.push(...attrPos[i]);
@@ -130,7 +132,7 @@ export default class Polyline extends ShapeBase {
       uniforms: {
         ...uniforms,
         u_Opacity: opacity,
-        u_DashOffset: dashOffset,
+        u_DashOffset: dashOffset / totalDistance,
         u_DashRatio: dashRatio,
       },
       primitive: gl.TRIANGLES,
@@ -155,10 +157,13 @@ export default class Polyline extends ShapeBase {
   }
 
   protected drawModel() {
+    // @ts-ignore
+    const { dashOffset = 0 } = this.attr();
     const { width, height } = this.rendererService.getViewportSize();
     const pixelRatio = getPixelRatio();
     this.model.draw({
       uniforms: {
+        u_DashOffset: dashOffset / this.totalDistance,
         u_ViewportSize: [width / pixelRatio, height / pixelRatio],
         u_ViewProjectionMatrix: [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1],
         u_ModelMatrix: [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1],
