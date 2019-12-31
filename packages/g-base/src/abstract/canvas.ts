@@ -1,7 +1,7 @@
 import Container from './container';
 import { ICanvas } from '../interfaces';
 import { CanvasCfg, Point, Renderer, Cursor } from '../types';
-import { isBrowser, isString, isObject } from '../util/util';
+import { isBrowser, isString, each } from '../util/util';
 import Timeline from '../animate/timeline';
 
 const PX_SUFFIX = 'px';
@@ -89,6 +89,37 @@ abstract class Canvas extends Container implements ICanvas {
     this.set('width', width);
     this.set('height', height);
     this.onCanvasChange('changeSize');
+  }
+
+  onAttrChange(name, value, originValue) {
+    super.onAttrChange(name, value, originValue);
+    if (name === 'matrix') {
+      // console.log('canvas matrix');
+      const totalMatrix = this.getTotalMatrix();
+      this._applyChildrenMarix(totalMatrix);
+    }
+  }
+
+  // 不但应用到自己身上还要应用于子元素
+  applyMatrix(matrix: number[]) {
+    const preTotalMatrix = this.getTotalMatrix();
+    super.applyMatrix(matrix);
+    const totalMatrix = this.getTotalMatrix();
+    // console.log(preTotalMatrix);
+    // console.log(totalMatrix);
+    // totalMatrix 没有发生变化时，这里仅考虑两者都为 null 时
+    // 不继续向下传递矩阵
+    if (totalMatrix === preTotalMatrix) {
+      return;
+    }
+    this._applyChildrenMarix(totalMatrix);
+  }
+  // 在子元素上设置矩阵
+  _applyChildrenMarix(totalMatrix) {
+    const children = this.getChildren();
+    each(children, (child) => {
+      child.applyMatrix(totalMatrix);
+    });
   }
 
   /**

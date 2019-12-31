@@ -4,7 +4,7 @@ import { IElement } from './interfaces';
 import EventController from '@antv/g-base/lib/event/event-contoller';
 import * as Shape from './shape';
 import Group from './group';
-import { drawChildren, getMergedRegion } from './util/draw';
+import { applyAttrsToContext, drawChildren, getMergedRegion } from './util/draw';
 import { getPixelRatio, each, mergeRegion, requestAnimationFrame, clearAnimationFrame } from './util/util';
 const REFRSH_COUNT = 30; // 局部刷新的元素个数，超过后合并绘图区域
 
@@ -150,8 +150,10 @@ class Canvas extends AbstractCanvas {
     const element = this.get('el');
     const children = this.getChildren() as IElement[];
     context.clearRect(0, 0, element.width, element.height);
+    applyAttrsToContext(context, this);
     drawChildren(context, children);
   }
+  skipDraw() {}
   // 绘制局部
   _drawRegion() {
     const context = this.get('context');
@@ -167,6 +169,7 @@ class Canvas extends AbstractCanvas {
       context.beginPath();
       context.rect(region.minX, region.minY, region.maxX - region.minX, region.maxY - region.minY);
       context.clip();
+      applyAttrsToContext(context, this);
       // 绘制子元素
       drawChildren(context, children, region);
       context.restore();
